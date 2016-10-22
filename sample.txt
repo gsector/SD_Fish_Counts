@@ -1,0 +1,39 @@
+<div class="panel">
+<h2 class="text-center">Overnight Fish Counts</h2>
+<table class="table table-stripped">
+<thead>
+<tr>
+<th width="25%">Boat</th>
+<th width="20%">Trip Details</th>
+<th width="45%">Dock Totals</th>
+<th width="10%">Audio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="/charter_boats/aztec.php"><b>Aztec</b></a><br>
+<a href="/landings/seaforth_sportfishing.php">Seaforth Sportfishing</a><br>
+					San Diego, CA				</br></br></td>
+<td>12 Anglers<br>Overnight</br></td>
+<td>60 Yellowtail, 24 Yellowfin Tuna</td>
+<td></td>
+<tr>
+<td>
+<a href="/charter_boats/impulse.php"><b>Impulse</b></a><br>
+<a href="/landings/dana_landing.php">Dana Landing</a><br>
+					San Diego, CA				</br></br></td>
+<td>2 Anglers<br>Overnight<br><i>Offshore</i></br></br></td>
+<td>1 Dorado, 10 Yellowfin Tuna</td>
+<td></td>
+<tr>
+<td>
+<a href="/charter_boats/tribute.php"><b>Tribute</b></a><br>
+<a href="/landings/seaforth_sportfishing.php">Seaforth Sportfishing</a><br>
+					San Diego, CA				</br></br></td>
+<td>25 Anglers<br>Overnight</br></td>
+<td>118 Yellowtail, 34 Yellowfin Tuna</td>
+<td></td>
+</tr></tr></tr></tbody>
+</table>
+</div>
