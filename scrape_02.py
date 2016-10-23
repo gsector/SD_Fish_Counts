@@ -77,34 +77,49 @@ for dayz in tqdm.tqdm(range(numDays)):    # Get Request Results
                 # Get Boat and Landing
                 if soup3List.index(cTable) == 0:
                     # Get Boat
-                    rexp = '(?:boats)(?:.*>)(.*)(?:<\/b)'
-                    tripData['boat'] = re.search(rexp,str(cTable)).group(1)
+                    try:
+                        rexp = '(?:boats)(?:.*>)(.*)(?:<\/b)'
+                        tripData['boat'] = re.search(rexp,str(cTable)).group(1)
+                    except:
+                        tripData['boat'] = ''
                     # Get Landing
-                    rexp = '(?:landings)(?:.*>)(.*)(?:<\/a)'
-                    tripData['landing'] = re.search(rexp,str(cTable)).group(1)
-                
+                    try:
+                        rexp = '(?:landings)(?:.*>)(.*)(?:<\/a)'
+                        tripData['landing'] = re.search(rexp,str(cTable)).group(1)
+                    except:
+                        tripData['landing'] = ''    
+                    
                 # Get # of Anglers & Trip Type
                 if soup3List.index(cTable) == 1:
                     # Anglers
-                    rexp = '(?:<td>)(\d+\s+[a-zA-Z]*)(?:<br>)'
-                    anglers = re.search(rexp,str(cTable)).group(1)
-                    rexp = '(\d*)'
-                    tripData['anglers'] = re.search(rexp,anglers).group(1).strip()
+                    try:
+                        rexp = '(?:<td>)(\d+\s+[a-zA-Z]*)(?:<br>)'
+                        anglers = re.search(rexp,str(cTable)).group(1)
+                        rexp = '(\d*)'
+                        tripData['anglers'] = re.search(rexp,anglers).group(1).strip()
+                    except:
+                        tripData['anglers'] = ''
 
                     # Trip Type
-                    rexp = '(?:<br>)(.*)(?:<\/br>|<br>)'
-                    tripData['tripType'] = re.search(rexp,str(cTable)).group(1)
-                    # if <br> exists, get rid of it and everything after
                     try:
-                        j = tripData['tripType'].index('<br>')
-                        tripData['tripType'] = tripData['tripType'][:j]
+                        rexp = '(?:<br>)(.*)(?:<\/br>|<br>)'
+                        tripData['tripType'] = re.search(rexp,str(cTable)).group(1)
+                        # if <br> exists, get rid of it and everything after
+                        try:
+                            j = tripData['tripType'].index('<br>')
+                            tripData['tripType'] = tripData['tripType'][:j]
+                        except:
+                            pass
                     except:
-                        pass
+                        tripData['tripType']=''
 
                 # Get List of all the Fish
                 if soup3List.index(cTable) == 2:
-                    rexp = '<[^>]*>'
-                    tripData['rawFishes'] = re.sub(rexp,'',str(cTable))
+                    try:
+                        rexp = '<[^>]*>'
+                        tripData['rawFishes'] = re.sub(rexp,'',str(cTable))
+                    except:
+                        tripData['rawFishes'] = ''
 
         # Get Counts by Fish
         for fish in tripData['rawFishes'].split(','):
