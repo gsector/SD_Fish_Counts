@@ -17,7 +17,7 @@ numDays = 100
 # Open File to write to
 f = open('output.csv','a')
 
-for dayz in tqdm(range(numDays)):    # Get Request Results
+for dayz in tqdm.tqdm(range(numDays)):    # Get Request Results
     queryDate = str(currentDate - datetime.timedelta(days=dayz))
     queryUrl = 'http://sandiego.fishreports.com/dock_totals/boats.php?date=' + queryDate
     r = requests.get(queryUrl)
