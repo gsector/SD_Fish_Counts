@@ -1,5 +1,4 @@
-import datetime
+t = '3/4 Day<br><i>Local</i></br>'
 
-queryDate = datetime.date.today()
-
-print(queryDate-datetime.timedelta(days=1))
+print(t.index('<br>'))
+print(t[:t.index('<br>')])

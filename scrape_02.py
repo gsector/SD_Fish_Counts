@@ -12,8 +12,9 @@ def csvPrep(t):
 # Variables/Parameters
 url = 'http://sandiego.fishreports.com/dock_totals/boats.php?date='
 currentDate = datetime.date.today()
-numDays = 100
-
+lastDate = datetime.date(2000,1,1)
+numDays = int((currentDate - lastDate).days)
+print(str(numDays))
 # Open File to write to
 f = open('output.csv','a')
 
@@ -64,6 +65,12 @@ for dayz in tqdm.tqdm(range(numDays)):    # Get Request Results
                     # Trip Type
                     rexp = '(?:<br>)(.*)(?:<\/br>|<br>)'
                     tripData['tripType'] = re.search(rexp,str(cTable)).group(1)
+                    # if <br> exists, get rid of it and everything after
+                    try:
+                        j = tripData['tripType'].index('<br>')
+                        tripData['tripType'] = tripData['tripType'][:j]
+                    except:
+                        pass
 
                 # Get List of all the Fish
                 if soup3List.index(cTable) == 2:
