@@ -28,40 +28,45 @@ for aTable in soup.find_all('div',{'class':'panel'}):
     for bTable in soup2.find_all('tr'):
         soup3 = bs4.BeautifulSoup(str(bTable),'html.parser')
 
-        # Split boat's table by row
+        # Split boat's table by row + Initialize stuff
         soup3List = soup3.find_all('td')
+        tripData = dict()
+        tripData['date'] = queryDate
+
         for cTable in soup3List:
             # Get Boat and Landing
             if soup3List.index(cTable) == 0:
                 # Get Boat
                 rexp = '(?:boats)(?:.*>)(.*)(?:<\/b)'
-                boat = re.search(rexp,str(cTable)).group(1)
+                tripData['boat'] = re.search(rexp,str(cTable)).group(1)
                 # Get Landing
                 rexp = '(?:landings)(?:.*>)(.*)(?:<\/a)'
-                landing = re.search(rexp,str(cTable)).group(1)
+                tripData['landing'] = re.search(rexp,str(cTable)).group(1)
+            
             # Get # of Anglers & Trip Type
             if soup3List.index(cTable) == 1:
+                # Anglers
                 rexp = '(?:<td>)(\d+\s+[a-zA-Z]*)(?:<br>)'
                 anglers = re.search(rexp,str(cTable)).group(1)
+                rexp = '(\d*)'
+                tripData['anglers'] = re.search(rexp,anglers).group(1).strip()
+
+                # Trip Type
                 rexp = '(?:<br>)(.*)(?:<\/br>|<br>)'
-                tripType = re.search(rexp,str(cTable)).group(1)
-            # Get Fishes
+                tripData['tripType'] = re.search(rexp,str(cTable)).group(1)
+
+            # Get List of all the Fish
             if soup3List.index(cTable) == 2:
                 rexp = '<[^>]*>'
-                fishes = re.sub(rexp,'',str(cTable))
-    # Print Output
-    print('-----  BOAT TOTAL  -----')
-    print('  Date: ' + queryDate)
-    print('  Landing: ' + landing)
-    print('  Boat: ' + boat)
-    print('  Trip: ' + tripType)
-    print('  Anglers: ' + anglers)
-    # Print Fishes
-    for fish in fishes.split(','):
+                tripData['rawFishes'] = re.sub(rexp,'',str(cTable))
+
+    # Get Counts by Fish
+    for fish in tripData['rawFishes'].split(','):
+        fish = fish.strip()
         rexp = '(\d*)'
-        fishInt = re.search(rexp,fishes).group(1)
-        rexp = '(\D.*)'
-        fishType = re.search(rexp,fishes).group(1)
-        print('  Fish: ' + fish)
+        tripData['numFish'] =  re.search(rexp,fish).group(1).strip()
+        rexp = '(\D*)'
+        tripData['species'] = fish.replace(tripData['numFish'],'').strip()
+        print(tripData)
                 
                 
