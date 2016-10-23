@@ -2,7 +2,11 @@ import requests
 import bs4
 import re
 import datetime
-import xmltodict
+
+def csvPrep(t):
+    t = t.strip()
+    t = t.replace('"','""')
+    return '"' + t + '"'
 
 # Variables/Parameters
 queryDate = '2016-10-05'
@@ -67,6 +71,16 @@ for aTable in soup.find_all('div',{'class':'panel'}):
         tripData['numFish'] =  re.search(rexp,fish).group(1).strip()
         rexp = '(\D*)'
         tripData['species'] = fish.replace(tripData['numFish'],'').strip()
-        print(tripData)
+        
+        csvString = csvPrep(tripData['date']) \
+                    + ',' + csvPrep(tripData['landing']) \
+                    + ',' + csvPrep(tripData['boat']) \
+                    + ',' + csvPrep(tripData['tripType']) \
+                    + ',' + csvPrep(tripData['anglers']) \
+                    + ',' + csvPrep(tripData['numFish']) \
+                    + ',' + csvPrep(tripData['species']) 
+        
+        print(csvString)
+                    
                 
                 
