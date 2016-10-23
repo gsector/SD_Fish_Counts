@@ -45,9 +45,13 @@ c.execute('BEGIN TRANSACTION;')
 # Loop through every day
 for dayz in tqdm.tqdm(range(numDays)):    # Get Request Results
     queryDate = str(currentDate - datetime.timedelta(days=dayz))
-    queryUrl = 'http://sandiego.fishreports.com/dock_totals/boats.php?date=' + queryDate
-    r = requests.get(queryUrl)
-    soup = bs4.BeautifulSoup(r.text,'html.parser')
+    try:
+        queryUrl = 'http://sandiego.fishreports.com/dock_totals/boats.php?date=' + queryDate
+        r = requests.get(queryUrl)
+        soup = bs4.BeautifulSoup(r.text,'html.parser')
+    except:
+        print('Could not get data for date: ' + str(queryDate))
+        continue
 
     # Split by Trip Type
     for aTable in soup.find_all('div',{'class':'panel'}):
