@@ -1,60 +1,70 @@
-# import requests
-# import bs4
-# import re
 import datetime
+import time
 import tqdm
 import sqlite3
 import scrape_02_Modules as modz
-from multiprocessing import Pool
-from multiprocessing.dummy import Pool as ThreadPool
+from multiprocessing.dummy import Pool as ThreadPool 
 
-# Function to prep string for CSV output
-def csvPrep(t):
-    t = t.strip()
-    t = t.replace('"','""')
-    return '"' + t + '"'
+
+# So much help!!! http://chriskiehl.com/article/parallelism-in-one-line/
 
 # Variables/Parameters
-url = 'http://sandiego.fishreports.com/dock_totals/boats.php?date='
 currentDate = datetime.date.today()
-currentDate = datetime.date(2016,10,22) # Entry for testing only
-lastDate = datetime.date(2000,1,1)
-lastDate = datetime.date(2016,10,21) # Entry for testing only
+lastDate = datetime.date(2010,1,1)
 numDays = int((currentDate - lastDate).days)
+# numDays = 200 # Used for testing
+threadz = 12
+chunkSize = threadz * 4
 
-#conn = sqlite3.connect('Fish_Counts.db')
-#c = conn.cursor()
-#c.execute('BEGIN TRANSACTION;')
-
-def scraper(currentDate,dayz):
-    queryDate = str(currentDate - datetime.timedelta(days=dayz))
-    r = modz.requestPage('http://sandiego.fishreports.com/dock_totals/boats.php?date=' + queryDate)
+def scraper(url):
+    r = modz.requestPage(url)
+    queryDate = url[len(url)-10:]
     if r == '':
         return None
     trips = modz.pageParser(r,str(queryDate))
-    return trips
+    queryTxt = modz.breakDict(trips)
+    return queryTxt
 
-# Loop through every day
-# for dayz in tqdm.tqdm(range(numDays),ncols=10):    # Get Request Results
-for dayz in range(0,numDays):
-    scrapeResult = scraper(currentDate,dayz)
-    print(scrapeResult)
-            # Write data to csv file
-            # csvString = csvPrep(tripData['date']) \
-                        #+ ',' + csvPrep(tripData['landing']) \
-                        #+ ',' + csvPrep(tripData['boat']) \
-                        #+ ',' + csvPrep(tripData['tripType']) \
-                        #+ ',' + csvPrep(tripData['anglers']) \
-                        #+ ',' + csvPrep(tripData['numFish']) \
-                        #+ ',' + csvPrep(tripData['species']) \
-                        #+ '\n'
-            # f.write(csvString)
+tot = 0
+x = 0
+# Start Loop
+with tqdm.tqdm(total=numDays+1,desc='  Progress: ',smoothing=0) as pbar:
+    while x <= numDays:
+        chunk = []
+        for i in range(x, x + chunkSize):
+            if i > numDays:
+                continue
+            chunk.append(i)
+        x += chunkSize
 
-            # Write data to DB
-            # dbQuery = modz.insertQuery(tripData)
-            # c.execute(str(dbQuery))
+        # Get Every URL within the chunk
+        urlz = []
+        for dayz in chunk:
+            queryDate = str(currentDate - datetime.timedelta(days=dayz))
+            urlz.append('http://sandiego.fishreports.com/dock_totals/boats.php?date={}'.format(queryDate))
+        
+        # Run Multithreading
+        pool = ThreadPool(threadz)
+        results = pool.map(scraper, urlz)
+        pool.close()
+        pool.join()
+        
+        # Open DB connection
+        conn = sqlite3.connect('Fish_Counts.db')
+        c = conn.cursor()
+        c.execute('BEGIN TRANSACTION;')
 
-# Close connections
-# f.close() # Close CSV File
-#conn.commit()
-#conn.close()
+        # Write data to DB
+        for dbQuery in results:
+            try:
+                for query in dbQuery:
+                    c.execute(query)
+            except:
+                pass
+
+        # Close connections
+        conn.commit()
+        conn.close()
+        pbar.update(len(results))
+        results.clear()
+    pbar.close()    

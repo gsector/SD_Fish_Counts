@@ -1,19 +1,28 @@
 
-# Create Insert query
-def insertQuery(d):
+def breakDict(trips):
     dbFields = 'Date,Landing,Boat,Trip,Anglers,Fish,Species'
     tableName = 'Scraped_Data'
-    q = ''
-    q += '\'' + d["date"].replace('\'','') + '\'' + ','
-    q += '\'' + d["landing"].replace('\'','') + '\'' + ','
-    q += '\'' + d["boat"].replace('\'','') + '\'' + ','
-    q += '\'' + d["tripType"].replace('\'','') + '\'' + ','
-    q += '\'' + d["anglers"].replace('\'','') + '\'' + ','
-    q += '\'' + d["numFish"].replace('\'','') + '\'' + ','
-    q += '\'' + d["species"].replace('\'','') + '\''
-    
-    query = 'INSERT OR REPLACE INTO {table} ({fields}) VALUES ({values});'.format(table=tableName,fields=dbFields,values=q)
-    return query
+    allQueries = []
+    # Break Dictionary
+    try:
+        for d in trips:
+            #print(d)
+            for fish in d['fishes']:
+                v = ''
+                v += '\'' + d["date"].replace('\'','') + '\'' + ','
+                v += '\'' + d["landing"].replace('\'','') + '\'' + ','
+                v += '\'' + d["boat"].replace('\'','') + '\'' + ','
+                v += '\'' + d["tripType"].replace('\'','') + '\'' + ','
+                v += '\'' + d["anglers"].replace('\'','') + '\'' + ','
+                v += '\'' + fish["numFish"].replace('\'','') + '\'' + ','
+                v += '\'' + fish["species"].replace('\'','') + '\''
+                query = 'INSERT OR REPLACE INTO {table} ({fields}) VALUES ({values});'.format(table=tableName,fields=dbFields,values=v)
+                allQueries.append(query)
+                query = ''
+    except:
+        pass
+    return allQueries
+
 
 # Request Web Page Data
 def requestPage(url):
@@ -124,5 +133,12 @@ def pageParser(r,queryDate):
                     trips.append(tripData)
             
             # Return list of dictionaries that contain each individual trips' data
-        print('----------')
         return trips
+
+
+
+# Function to prep string for CSV output
+def csvPrep(t):
+    t = t.strip()
+    t = t.replace('"','""')
+    return '"' + t + '"'
