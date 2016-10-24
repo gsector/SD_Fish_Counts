@@ -1,26 +1,21 @@
 
-def breakDict(trips):
+def breakDict(tripz):
     dbFields = 'Date,Landing,Boat,Trip,Anglers,Fish,Species'
     tableName = 'Scraped_Data'
     allQueries = []
     # Break Dictionary
-    try:
-        for d in trips:
-            #print(d)
-            for fish in d['fishes']:
-                v = ''
-                v += '\'' + d["date"].replace('\'','') + '\'' + ','
-                v += '\'' + d["landing"].replace('\'','') + '\'' + ','
-                v += '\'' + d["boat"].replace('\'','') + '\'' + ','
-                v += '\'' + d["tripType"].replace('\'','') + '\'' + ','
-                v += '\'' + d["anglers"].replace('\'','') + '\'' + ','
-                v += '\'' + fish["numFish"].replace('\'','') + '\'' + ','
-                v += '\'' + fish["species"].replace('\'','') + '\''
-                query = 'INSERT OR REPLACE INTO {table} ({fields}) VALUES ({values});'.format(table=tableName,fields=dbFields,values=v)
-                allQueries.append(query)
-                query = ''
-    except:
-        pass
+    for d in tripz:
+        v = ''
+        v += '\'' + d["date"].replace('\'','') + '\'' + ','
+        v += '\'' + d["landing"].replace('\'','') + '\'' + ','
+        v += '\'' + d["boat"].replace('\'','') + '\'' + ','
+        v += '\'' + d["tripType"].replace('\'','') + '\'' + ','
+        v += '\'' + d["anglers"].replace('\'','') + '\'' + ','
+        for fish in d['fishes']:
+            v2 = v + '\'' + fish["numFish"].replace('\'','') + '\'' + ','
+            v2 += '\'' + fish["species"].replace('\'','') + '\''
+            query = 'INSERT OR REPLACE INTO {table} ({fields}) VALUES ({values});'.format(table=tableName,fields=dbFields,values=v2)
+            allQueries.append(query)            
     return allQueries
 
 
@@ -39,10 +34,11 @@ def pageParser(r,queryDate):
 
     trips = list() # Initialize list of trips
     soup = bs4.BeautifulSoup(r,'html.parser') # Initialize request data into a BeautifulSoup thing
+    
     # Split by Trip Type
     for aTable in soup.find_all('div',{'class':'panel'}):
         soup2 = bs4.BeautifulSoup(str(aTable),'html.parser')
-        
+
         # Check to see if parsed piece is a table with fish counts
         try:
             countType = soup2.h2.string
@@ -52,11 +48,17 @@ def pageParser(r,queryDate):
         # Split tables by boat
         for bTable in soup2.find_all('tr'):
             soup3 = bs4.BeautifulSoup(str(bTable),'html.parser')
-
+            
             # Split boat's table by row + Initialize stuff
             soup3List = soup3.find_all('td')
             tripData = dict()
             tripData['date'] = queryDate
+            tripData['landing'] = ''
+            tripData['boat'] = ''
+            tripData['anglers'] = ''
+            tripData['tripType'] = ''
+            tripData['rawFishes'] = ''
+            tripData['fishes'] = list()
 
             # Get individual trip data
             for cTable in soup3List:
@@ -107,33 +109,40 @@ def pageParser(r,queryDate):
                         tripData['rawFishes'] = re.sub(rexp,'',str(cTable))
                     except:
                         tripData['rawFishes'] = ''
-                    
-                    # Break up fish list into individual dictionaries in a list
-                    if tripData['rawFishes']:
-                        # Split on comma's
-                        tripData['fishes'] = list()
-                        for fish in tripData['rawFishes'].split(','):
-                            fish = fish.strip()
-                            fishes = dict()
-                            # Get # of fish
-                            try:
-                                rexp = '(\d*)'
-                                fishes['numFish'] =  re.search(rexp,fish).group(1).strip()
-                            except:
-                                fishes['numFish']= '?'
-                            # Get type/species of fish
-                            try:
-                                fishes['species'] = fish.replace(fishes['numFish'],'').strip()
-                            except:
-                                fishes['species'] = '?'
-
-                            # Add parsed fish data to dictionary    
-                            tripData['fishes'].append(fishes)
-                    # Append each trips' data to a list of trips
-                    trips.append(tripData)
+                if soup3List.index(cTable) > 2:
+                    continue
             
-            # Return list of dictionaries that contain each individual trips' data
-        return trips
+            try:
+                if tripData['rawFishes'] != '':
+                    pass
+            except:
+                tripData['rawFishes'] = ''
+                    
+            # Break up fish list into individual dictionaries in a list
+            if tripData['rawFishes'] != '':
+                # Split on comma's
+                tripData['fishes'] = list()
+                for fish in tripData['rawFishes'].split(','):
+                    fish = fish.strip()
+                    aFish = dict()
+                    # Get # of fish
+                    try:
+                        rexp = '(\d*)'
+                        aFishe['numFish'] =  re.search(rexp,fish).group(1).strip()
+                    except:
+                        aFish['numFish']= '?'
+                    # Get type/species of fish
+                    try:
+                        aFish['species'] = fish.replace(aFish['numFish'],'').strip()
+                    except:
+                        aFish['species'] = '?'
+                    # Add parsed fish data to dictionary    
+                    tripData['fishes'].append(aFish.copy())
+            # Append each trips' data to a list of trips
+            trips.append(tripData.copy())
+            
+        # Return list of dictionaries that contain each individual trips' data
+    return trips.copy()
 
 
 
