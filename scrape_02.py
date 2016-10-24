@@ -27,7 +27,7 @@ def scraper(url):
 tot = 0
 x = 0
 print('')
-pbar = tqdm.tqdm(total=numDays+1,desc='Progress:',ncols=75)
+pbar = tqdm.tqdm(total=numDays+1,desc='    Progress:')
 # Start Loop
 
 while x <= numDays:
