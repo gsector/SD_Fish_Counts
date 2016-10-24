@@ -5,7 +5,6 @@ import sqlite3
 import scrape_02_Modules as modz
 from multiprocessing.dummy import Pool as ThreadPool 
 
-
 # So much help!!! http://chriskiehl.com/article/parallelism-in-one-line/
 
 # Variables/Parameters
@@ -13,7 +12,6 @@ currentDate = datetime.date.today()
 lastDate = datetime.date(2000,1,1)
 numDays = int((currentDate - lastDate).days)
 # numDays = 200 # Used for testing
-numDays = 0
 threadz = 12
 chunkSize = threadz * 4
 
@@ -28,6 +26,8 @@ def scraper(url):
 
 tot = 0
 x = 0
+print('')
+pbar = tqdm.tqdm(total=numDays+1,desc='Progress:',ncols=75)
 # Start Loop
 
 while x <= numDays:
@@ -66,4 +66,5 @@ while x <= numDays:
     # Close connections
     conn.commit()
     conn.close()
+    pbar.update(len(results))
     results.clear()

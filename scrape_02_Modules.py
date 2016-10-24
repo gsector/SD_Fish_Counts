@@ -14,7 +14,7 @@ def breakDict(tripz):
         for fish in d['fishes']:
             v2 = v + '\'' + fish["numFish"].replace('\'','') + '\'' + ','
             v2 += '\'' + fish["species"].replace('\'','') + '\''
-            query = 'INSERT OR REPLACE INTO {table} ({fields}) VALUES ({values});'.format(table=tableName,fields=dbFields,values=v2)
+            query = 'INSERT INTO {table} ({fields}) VALUES ({values});'.format(table=tableName,fields=dbFields,values=v2)
             allQueries.append(query)            
     return allQueries
 
@@ -119,25 +119,34 @@ def pageParser(r,queryDate):
                 tripData['rawFishes'] = ''
                     
             # Break up fish list into individual dictionaries in a list
-            if tripData['rawFishes'] != '':
-                # Split on comma's
-                tripData['fishes'] = list()
-                for fish in tripData['rawFishes'].split(','):
-                    fish = fish.strip()
-                    aFish = dict()
-                    # Get # of fish
-                    try:
-                        rexp = '(\d*)'
-                        aFishe['numFish'] =  re.search(rexp,fish).group(1).strip()
-                    except:
-                        aFish['numFish']= '?'
-                    # Get type/species of fish
-                    try:
-                        aFish['species'] = fish.replace(aFish['numFish'],'').strip()
-                    except:
-                        aFish['species'] = '?'
-                    # Add parsed fish data to dictionary    
-                    tripData['fishes'].append(aFish.copy())
+            tripData['fishes'] = list()
+            
+            # if no fish were caught....
+            if tripData['rawFishes'] == '':
+                aFish = dict()
+                aFish['numFish'] = ''
+                aFish['species'] = ''
+                tripData['fishes'].append(aFish.copy())
+                continue
+            
+            # If Fish were caught....
+            for fish in tripData['rawFishes'].split(','):
+                fish = fish.strip()
+                aFish = dict()
+                # Get # of fish
+                try:
+                    rexp = '(\d*)'
+                    aFish['numFish'] =  re.search(rexp,fish).group(1).strip()
+                except:
+                    aFish['numFish']= '?'
+                # Get type/species of fish
+                try:
+                    aFish['species'] = fish.replace(aFish['numFish'],'').strip()
+                except:
+                    aFish['species'] = '?'
+                # Add parsed fish data to dictionary    
+                tripData['fishes'].append(aFish.copy())
+
             # Append each trips' data to a list of trips
             trips.append(tripData.copy())
             
